@@ -1,0 +1,8 @@
+# 编译产物（C++ 特有，不进版本控制）
+trade
+*.o
+*.out
+build/
+
+# IDE 个人配置
+.vscode/
