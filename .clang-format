@@ -1,0 +1,28 @@
+# 基于LLVM风格定制
+BasedOnStyle: LLVM
+
+# ====== 缩进 ======
+IndentWidth: 4                  # 缩进4个空格
+TabWidth: 4                     # Tab等效4空格
+UseTab: Never                   # 禁用Tab，全用空格
+AccessModifierOffset: -4        # public/private 顶格写
+
+# ====== 大括号（跟行模式，删除无效的BraceWrapping）======
+BreakBeforeBraces: Attach       # 大括号跟行（int main() {）
+# 若要自定义大括号行为，需把上面改成 BreakBeforeBraces: Custom，再配BraceWrapping
+
+# ====== 空格 ======
+SpaceBeforeParens: ControlStatements        # if (1) 而非 if(1)  
+SpacesBeforeTrailingComments: 2 # 注释前空2格
+PointerAlignment: Left          # 指针贴近类型（int* a;）
+# 兼容低版本clang-format：若版本<11，删除下面这行
+ReferenceAlignment: Left        
+
+# ====== 换行/长度 ======
+ColumnLimit: 120                # 单行最长120字符
+MaxEmptyLinesToKeep: 2          # 最多保留2个空行
+AllowShortFunctionsOnASingleLine: Empty
+AllowShortIfStatementsOnASingleLine: Never
+
+# ====== 命名空间 ======
+NamespaceIndentation: None      # 命名空间内代码不缩进
