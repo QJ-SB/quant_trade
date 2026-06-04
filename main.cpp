@@ -15,9 +15,10 @@ int main() {
     ticks.push_back(tick2);
     ticks.push_back(tick3);
 
-    for (Tick& tick : ticks) {
+    for (const Tick& tick : ticks) {
         std::cout << "价格：" << tick.get_price() << "  ";
-        std::cout << "成交量：" << tick.get_volume() << std::endl;
+        std::cout << "成交量：" << tick.get_volume() << "  ";
+        std::cout << "成交额：" << tick.get_turnover() << std::endl;
     }
 
     return 0;
