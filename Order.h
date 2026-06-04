@@ -1,6 +1,7 @@
 // Order.h
 #pragma once
 
+//
 enum class Direction { Buy, Sell };  // 交易方向，用强枚举类型
 
 class Order {
