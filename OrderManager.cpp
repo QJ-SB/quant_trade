@@ -19,3 +19,12 @@ void OrderManager::print_order() const {
         std::cout << "委托数量：" << ord.get_quantity() << std::endl;
     }
 }
+
+std::optional<Order> OrderManager::get_order(uint64_t id) const {
+    auto it = m_orders.find(id);
+    if (it != m_orders.end()) {
+        return it->second;
+    } else {
+        return std::nullopt;
+    }
+}
