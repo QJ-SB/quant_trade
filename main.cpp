@@ -3,6 +3,7 @@
 #include <vector>
 
 #include "Order.h"
+#include "OrderManager.h"
 #include "Tick.h"
 
 
@@ -71,6 +72,16 @@ int main() {
         std::cout << "委托数量：" << order.get_quantity() << std::endl;
     }
 
+    //验证OrderManager
+    std::cout << "=======验证OrderManager功能=======" << std::endl;
+    OrderManager order_manager;
+    order_manager.add_order(order1);
+    order_manager.add_order(order2);
+    order_manager.add_order(order3);
+    std::cout << "容器内订单数量：" << order_manager.get_order_size()
+              << std::endl;
+    std::cout << "遍历打印容器内订单：" << std::endl;
+    order_manager.print_order();
 
     return 0;
 }
