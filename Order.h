@@ -1,7 +1,7 @@
 // Order.h
 #pragma once
-
 #include <cstdint>  //订单编号：uint64_t
+#include <string>
 
 enum class Direction { Buy, Sell };  //交易方向，用强枚举类型【类外定义】
 
@@ -11,6 +11,13 @@ enum class OrderStatus {  //订单状态，用强枚举类型【类外定义】
     CANCELLED,            //已撤
     REJECTED              //被拒
 };
+
+//辅助函数：强枚举类型(交易方向) → 字符串
+std::string direction_to_string(Direction d);
+
+//辅助函数：强枚举类型（订单状态）→ 字符串
+std::string order_status_to_string(OrderStatus o);
+
 
 class Order {
 public:

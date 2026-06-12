@@ -1,5 +1,7 @@
 #include "Order.h"
 
+#include <string>
+
 Order::Order(uint64_t id, Direction direction, double price, int quantity)
     : m_order_id(id), m_direction(direction), m_price(price),
       m_quantity(quantity) {}
@@ -22,4 +24,24 @@ double Order::get_price() const {
 
 int Order::get_quantity() const {
     return m_quantity;
+}
+
+std::string direction_to_string(Direction d) {
+    if (d == Direction::Buy)
+        return "Buy";
+    return "Sell";
+}
+
+std::string order_status_to_string(OrderStatus o) {
+    switch (o) {
+    case OrderStatus::PENDING:
+        return "PENDING";  //挂单中、待成交
+    case OrderStatus::FILLED:
+        return "FILLED";  //已成交
+    case OrderStatus::CANCELLED:
+        return "CANCELLED";  //已撤
+    case OrderStatus::REJECTED:
+        return "REJECTED";  //被拒
+    }
+    return "UNKNOWN";  //未知
 }
