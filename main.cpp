@@ -61,7 +61,7 @@ int main() {
 
     //验证OrderManager查询功能
     std::cout << "=======验证OrderManager查询功能=======" << std::endl;
-    auto ret1 = order_manager.get_order(order1.get_id());
+    auto ret1 = order_manager.get_order_content(order1.get_id());
     if (ret1 != std::nullopt) {
         std::cout << "订单编号：" << ret1->get_id() << "  ";
         std::cout << "订单状态：" << order_status_to_string(ret1->get_status())
@@ -73,7 +73,7 @@ int main() {
     } else {
         std::cout << "查无此单" << std::endl;
     }
-    auto ret2 = order_manager.get_order(123);
+    auto ret2 = order_manager.get_order_content(123);
     if (ret2 != std::nullopt) {
         std::cout << "订单编号：" << ret2->get_id() << "  ";
         std::cout << "订单状态：" << order_status_to_string(ret2->get_status())
@@ -84,6 +84,39 @@ int main() {
         std::cout << "委托数量：" << ret2->get_quantity() << std::endl;
     } else {
         std::cout << "查无此单" << std::endl;
+    }
+
+    //验证OrderManager修改功能
+    std::cout << "=======验证OrderManager修改功能=======" << std::endl;
+    bool ret3 = order_manager.update_order_status(order1.get_id(),
+                                                  OrderStatus::CANCELLED);
+    if (ret3) {
+        std::cout << "订单修改成功！修改后内容：" << std::endl;
+        std::cout << "订单编号："
+                  << order_manager.get_order_content(order1.get_id())->get_id()
+                  << "  ";
+        std::cout << "订单状态："
+                  << order_status_to_string(
+                         order_manager.get_order_content(order1.get_id())
+                             ->get_status())
+                  << std::endl;
+    } else {
+        std::cout << "订单修改失败！查无此单！" << std::endl;
+    }
+
+    bool ret4 = order_manager.update_order_status(123, OrderStatus::CANCELLED);
+    if (ret4) {
+        std::cout << "订单修改成功！修改后内容：" << std::endl;
+        std::cout << "订单编号："
+                  << order_manager.get_order_content(order1.get_id())->get_id()
+                  << "  ";
+        std::cout << "订单状态："
+                  << order_status_to_string(
+                         order_manager.get_order_content(order1.get_id())
+                             ->get_status())
+                  << std::endl;
+    } else {
+        std::cout << "订单修改失败！查无此单！" << std::endl;
     }
 
     return 0;

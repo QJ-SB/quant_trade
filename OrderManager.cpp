@@ -20,11 +20,21 @@ void OrderManager::print_order() const {
     }
 }
 
-std::optional<Order> OrderManager::get_order(uint64_t id) const {
+std::optional<Order> OrderManager::get_order_content(uint64_t id) const {
     auto it = m_orders.find(id);
     if (it != m_orders.end()) {
         return it->second;
     } else {
         return std::nullopt;
+    }
+}
+
+bool OrderManager::update_order_status(uint64_t id, OrderStatus status) {
+    auto it = m_orders.find(id);
+    if (it != m_orders.end()) {
+        it->second.set_status(status);
+        return true;
+    } else {
+        return false;
     }
 }

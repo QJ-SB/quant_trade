@@ -3,15 +3,14 @@
 #include <string>
 
 Order::Order(uint64_t id, Direction direction, double price, int quantity)
-    : m_order_id(id), m_direction(direction), m_price(price),
-      m_quantity(quantity) {}
+    : m_id(id), m_direction(direction), m_price(price), m_quantity(quantity) {}
 
 uint64_t Order::get_id() const {
-    return m_order_id;
+    return m_id;
 }
 
 OrderStatus Order::get_status() const {
-    return m_order_status;
+    return m_status;
 }
 
 Direction Order::get_direction() const {
@@ -24,6 +23,10 @@ double Order::get_price() const {
 
 int Order::get_quantity() const {
     return m_quantity;
+}
+
+void Order::set_status(OrderStatus status) {
+    m_status = status;
 }
 
 std::string direction_to_string(Direction d) {
