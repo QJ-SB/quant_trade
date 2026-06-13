@@ -2,7 +2,7 @@
 
 #include <string>
 
-Order::Order(uint64_t id, Direction direction, double price, int quantity)
+Order::Order(uint64_t id, OrderDirection direction, double price, int quantity)
     : m_id(id), m_direction(direction), m_price(price), m_quantity(quantity) {}
 
 uint64_t Order::get_id() const {
@@ -13,7 +13,7 @@ OrderStatus Order::get_status() const {
     return m_status;
 }
 
-Direction Order::get_direction() const {
+OrderDirection Order::get_direction() const {
     return m_direction;
 }
 
@@ -29,8 +29,8 @@ void Order::set_status(OrderStatus status) {
     m_status = status;
 }
 
-std::string direction_to_string(Direction d) {
-    if (d == Direction::Buy)
+std::string direction_to_string(OrderDirection d) {
+    if (d == OrderDirection::Buy)
         return "Buy";
     return "Sell";
 }
