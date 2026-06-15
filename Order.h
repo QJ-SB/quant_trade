@@ -33,6 +33,8 @@ public:
 
     // setter
     void set_status(OrderStatus status);  //修改订单
+    void reduce_quantity(int amount);     //扣减成功撮合数量
+    void set_quantity(int quantity);  //订单撮合后的-“剩余回挂”
 
 private:
     uint64_t m_id;                                //订单编号

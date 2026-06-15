@@ -29,6 +29,14 @@ void Order::set_status(OrderStatus status) {
     m_status = status;
 }
 
+void Order::reduce_quantity(int amount) {
+    m_quantity -= amount;
+}
+
+void Order::set_quantity(int quantity) {
+    m_quantity = quantity;
+}
+
 std::string direction_to_string(OrderDirection d) {
     if (d == OrderDirection::Buy)
         return "Buy";
