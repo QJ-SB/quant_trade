@@ -33,41 +33,75 @@ void OrderBook::print_book() const {
 }
 
 int OrderBook::match(const Order& order) {
-    int remaining = order.get_quantity();  // 局部的买单余量跟踪
+    //【共用部分】
+    int remaining = order.get_quantity();  // 局部的买、卖单余量跟踪
 
-    // while循环：
-    // 【买单吃卖盘】：买单有余量 && 卖盘非空 && 买单价>=卖盘最低价（成交价）
-    while (remaining > 0 && !m_asks.empty() &&
-           order.get_price() >= m_asks.begin()->first) {
-        auto asks_it = m_asks.begin();  // 拿到卖盘起始迭代器
-        auto& maker =
-            asks_it->second.front();  // 拿到卖盘起始单的“队头”（挂单者）
+    //【买吃卖】如果是新单是买单
+    if (order.get_direction() == OrderDirection::Buy) {
+        // while循环1：
+        // 【买单吃卖盘】：买单有余量 && 卖盘非空 &&
+        // 买单价>=卖盘最低价（成交价）
+        while (remaining > 0 && !m_asks.empty() &&
+               order.get_price() >= m_asks.begin()->first) {
+            auto asks_it = m_asks.begin();  // 拿到卖盘起始迭代器
+            auto& maker =
+                asks_it->second.front();  // 拿到卖盘起始单的“队头”（挂单者）
 
-        int fill =
-            std::min(remaining, maker.get_quantity());  // 装填“成交量缓冲区”
-        double trade_price = asks_it->first;  // 成交价 = 卖盘“best ask”
-        std::cout << "成交  价：" << trade_price << " 量：" << fill
-                  << " (taker:" << order.get_id() << " maker:" << maker.get_id()
-                  << ")"
-                  << std::endl;  // 打印 ———— maker：挂单者，taker：吃单者
+            int fill = std::min(remaining,
+                                maker.get_quantity());  // 装填“成交量缓冲区”
+            double trade_price = asks_it->first;  // 成交价 = 卖盘“best ask”
+            std::cout << "成交  价：" << trade_price << " 量：" << fill
+                      << " (taker:" << order.get_id()
+                      << " maker:" << maker.get_id() << ")"
+                      << std::endl;  // 打印 ———— maker：挂单者，taker：吃单者
 
-        maker.reduce_quantity(fill);  // 卖盘队头-扣减成交量
-        remaining -= fill;            // 新单余量-跟踪更新
+            maker.reduce_quantity(fill);  // 卖盘队头-扣减成交量
+            remaining -= fill;            // 新单余量-跟踪更新
 
-        if (0 == maker.get_quantity()) {    // 如果队头被吃完
-            asks_it->second.pop_front();    // 队头出队，后续补队头
-            if (asks_it->second.empty()) {  // 没有队员了
-                m_asks.erase(asks_it);      // 卖盘移除节点
+            if (0 == maker.get_quantity()) {  // 如果队头被吃完
+                asks_it->second.pop_front();  // 队头出队，后续补队头
+                if (asks_it->second.empty()) {  // 没有队员了
+                    m_asks.erase(asks_it);      // 卖盘移除节点
+                }
+            }
+        }
+    } else {  // 【卖吃买】如果是新单是卖单
+        // while循环2：
+        // 【卖单吃买盘】：卖单有余量 && 买盘非空 &&
+        // 卖单价<=买盘最高价（成交价）
+        while (remaining > 0 && !m_bids.empty() &&
+               order.get_price() <= m_bids.begin()->first) {
+            auto bids_it = m_bids.begin();  // 拿到买盘起始迭代器
+            auto& maker =
+                bids_it->second.front();  // 拿到买盘起始单的“队头”（挂单者）
+
+            int fill = std::min(remaining,
+                                maker.get_quantity());  // 装填“成交量缓冲区”
+            double trade_price = bids_it->first;  // 成交价 = 买盘“best bid”
+            std::cout << "成交  价：" << trade_price << " 量：" << fill
+                      << " (taker:" << order.get_id()
+                      << " maker:" << maker.get_id() << ")"
+                      << std::endl;  // 打印 ———— maker：挂单者，taker：吃单者
+
+            maker.reduce_quantity(fill);  // 买盘队头-扣减成交量
+            remaining -= fill;            // 新单余量-跟踪更新
+
+            if (0 == maker.get_quantity()) {  // 如果队头被吃完
+                bids_it->second.pop_front();  // 队头出队，后续补队头
+                if (bids_it->second.empty()) {  // 没有队员了
+                    m_bids.erase(bids_it);      // 买盘移除节点
+                }
             }
         }
     }
 
-    // 循环吃单结束后：
-    if (remaining > 0) {  // 如果买单没吃完卖盘
+    // 【共用部分】循环吃单结束后：
+    if (remaining > 0) {  // 如果新的买、卖单-没吃完-卖、买盘
         Order leftover = order;  // 拷贝构造“新单拷贝”（因为新单是const）
-        leftover.set_quantity(remaining);  // 撮合余量-回挂-新单拷贝
+        leftover.set_quantity(remaining);  // 撮合的余量-回挂-新单拷贝
         add_order(leftover);  // 调用orderbook内部添加新单职能
     }
 
-    return remaining;  // 最后返回撮合后新单余量
+    //【共用部分】
+    return remaining;  // 最后返回撮合后新单的余量
 }

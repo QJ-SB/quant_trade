@@ -132,57 +132,102 @@ int main() {
         std::cout << "订单修改失败！查无此单！" << std::endl;
     }
 
-    // 验证OrderBookt功能
+    // 验证OrderBook功能
     std::cout << std::endl;
     std::cout << "=======验证OrderBook“添加”和“打印”功能=======" << std::endl;
-    OrderBook order_book;
+    OrderBook order_book0;
     for (const Order& ord : orders) {
-        order_book.add_order(ord);
+        order_book0.add_order(ord);
     }
-    order_book.print_book();
+    order_book0.print_book();
+    OrderBook order_book1 = order_book0;  //拷贝一份order_book0用来测“买吃卖”
+    OrderBook order_book2 = order_book0;  //拷贝一份order_book0用来测“卖吃买”
+
 
     std::cout << std::endl;
-    std::cout << "=======验证OrderBook“撮合”功能=======" << std::endl;
+    std::cout << "=======验证OrderBook“买吃卖-撮合”功能=======" << std::endl;
     std::cout << "↓" << std::endl;
     std::cout << "=======买单和卖盘刚好吃完情况：" << std::endl;
     Order order7(128459023748920353, OrderDirection::Buy, 101,
                  10);  // 构建买单吃卖盘（刚好吃完情况）
-    int ret5 = order_book.match(order7);  // 承接match后返回值
+    int ret5 = order_book1.match(order7);  // 承接match后返回值
     std::cout << "撮合后新单余量：" << ret5 << std::endl;
-    order_book.print_book();  // 打印看最新orderbook
+    order_book1.print_book();  // 打印看最新orderbook
 
     std::cout << "↓" << std::endl;
     std::cout << "=======买单吃不完卖盘情况：" << std::endl;
     Order order8(128459023748920354, OrderDirection::Buy, 101,
                  10);  // 构建买单吃卖盘（吃不完情况）
-    int ret6 = order_book.match(order8);  // 承接match后返回值
+    int ret6 = order_book1.match(order8);  // 承接match后返回值
     std::cout << "撮合后新单余量：" << ret6 << std::endl;
-    order_book.print_book();  // 打印看最新orderbook
+    order_book1.print_book();  // 打印看最新orderbook
 
     std::cout << "↓" << std::endl;
     std::cout << "=======买单连吃多档、全部成交情况：" << std::endl;
     Order order9(128459023748920355, OrderDirection::Buy, 101,
                  20);  // 构建买单吃卖盘（连吃多档、全部成交情况）
-    int ret7 = order_book.match(order9);  // 承接match后返回值
+    int ret7 = order_book1.match(order9);  // 承接match后返回值
     std::cout << "撮合后新单余量：" << ret7 << std::endl;
-    order_book.print_book();  // 打印看最新orderbook
+    order_book1.print_book();  // 打印看最新orderbook
 
     std::cout << "↓" << std::endl;
     std::cout << "=======买单完全吃不了卖盘情况：" << std::endl;
     Order order10(128459023748920356, OrderDirection::Buy, 100,
                   5);  // 构建买单吃卖盘（完全不吃直接挂回情况）
-    int ret8 = order_book.match(order10);  // 承接match后返回值
+    int ret8 = order_book1.match(order10);  // 承接match后返回值
     std::cout << "撮合后新单余量：" << ret8 << std::endl;
-    order_book.print_book();  // 打印看最新orderbook
+    order_book1.print_book();  // 打印看最新orderbook
 
     std::cout << "↓" << std::endl;
     std::cout << "=======买单把卖盘完全吃完还有余情况：" << std::endl;
     Order order11(128459023748920357, OrderDirection::Buy, 101,
                   100);  // 构建买单吃卖盘（吃完还有余情况）
-    int ret9 = order_book.match(order11);  // 承接match后返回值
+    int ret9 = order_book1.match(order11);  // 承接match后返回值
     std::cout << "撮合后新单余量：" << ret9 << std::endl;
-    order_book.print_book();  // 打印看最新orderbook
+    order_book1.print_book();  // 打印看最新orderbook
 
+
+    std::cout << std::endl;
+    std::cout << "=======验证OrderBook“卖吃买-撮合”功能=======" << std::endl;
+    std::cout << "↓" << std::endl;
+    std::cout << "=======卖单和买盘刚好吃完情况：" << std::endl;
+    Order order12(128459023748920358, OrderDirection::Sell, 99,
+                  30);  // 构建卖单吃买盘（刚好吃完情况）
+    int ret10 = order_book2.match(order12);  // 承接match后返回值
+    std::cout << "撮合后新单余量：" << ret10 << std::endl;
+    order_book2.print_book();  // 打印看最新orderbook
+
+    std::cout << "↓" << std::endl;
+    std::cout << "=======卖单吃不完买盘情况：" << std::endl;
+    Order order13(128459023748920359, OrderDirection::Sell, 99,
+                  10);  // 构建卖单吃买盘（吃不完情况）
+    int ret11 = order_book2.match(order13);  // 承接match后返回值
+    std::cout << "撮合后新单余量：" << ret11 << std::endl;
+    order_book2.print_book();  // 打印看最新orderbook
+
+    std::cout << "↓" << std::endl;
+    std::cout << "=======卖单连吃多档、全部成交情况：" << std::endl;
+    Order order14(128459023748920360, OrderDirection::Sell, 99,
+                  15);  // 构建卖单吃买盘（连吃多档、全部成交情况）
+    int ret12 = order_book2.match(order14);  // 承接match后返回值
+    std::cout << "撮合后新单余量：" << ret12 << std::endl;
+    order_book2.print_book();  // 打印看最新orderbook
+
+    std::cout << "↓" << std::endl;
+    std::cout << "=======卖单完全吃不了买盘情况：" << std::endl;
+    Order order15(128459023748920361, OrderDirection::Sell, 100,
+                  5);  // 构建卖单吃买盘（完全不吃直接挂回情况）
+    int ret13 = order_book2.match(order15);  // 承接match后返回值
+    std::cout << "撮合后新单余量：" << ret13 << std::endl;
+    order_book2.print_book();  // 打印看最新orderbook
+
+    std::cout << "↓" << std::endl;
+    std::cout << "=======卖单把买盘完全吃完还有余情况：" << std::endl;
+    Order order16(128459023748920362, OrderDirection::Sell, 99,
+                  100);  // 构建买单吃卖盘（吃完还有余情况）
+    int ret14 = order_book2.match(order16);  // 承接match后返回值
+    std::cout << "撮合后新单余量：" << ret14 << std::endl;
+    order_book2.print_book();  // 打印看最新orderbook
 
     return 0;
 }
