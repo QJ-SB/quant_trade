@@ -289,5 +289,79 @@ int main() {
     }
     order_book2.print_book();  // 打印看最新orderbook
 
+
+    // OMS新函数apply_fill()测试
+    std::cout << std::endl;
+    std::cout << "=======验证OMS新函数apply_fill()功能=======" << std::endl;
+    Order order17(128459023748920363, OrderDirection::Buy, 99.1, 10);
+    order_manager.add_order(order17);
+    auto ret15 = order_manager.get_order_content(order17.get_id());
+    if (ret15 != std::nullopt) {
+        std::cout << "订单编号：" << ret15->get_id() << "  ";
+        std::cout << "订单状态：" << order_status_to_string(ret15->get_status())
+                  << "  ";
+        std::cout << "交易方向：" << direction_to_string(ret15->get_direction())
+                  << "  ";
+        std::cout << "委托价格：" << ret15->get_price() << "  ";
+        std::cout << "委托数量：" << ret15->get_quantity() << std::endl;
+    } else {
+        std::cout << "查无此单！" << std::endl;
+    }
+
+    bool ret16 = order_manager.apply_fill(order17.get_id(), 5);  //先冲减5单
+    if (ret16 == true) {
+        auto ret17 = order_manager.get_order_content(order17.get_id());  //再取
+        if (ret17 != std::nullopt) {
+            std::cout << "订单编号：" << ret17->get_id() << "  ";
+            std::cout << "订单状态："
+                      << order_status_to_string(ret17->get_status()) << "  ";
+            std::cout << "交易方向："
+                      << direction_to_string(ret17->get_direction()) << "  ";
+            std::cout << "委托价格：" << ret17->get_price() << "  ";
+            std::cout << "委托数量：" << ret17->get_quantity() << std::endl;
+        } else {
+            std::cout << "查无此单！" << std::endl;
+        }
+    } else {
+        std::cout << "查无此单！" << std::endl;
+    }
+
+    bool ret18 = order_manager.apply_fill(order17.get_id(), 5);  //再冲减为0
+    if (ret18 == true) {
+        auto ret19 = order_manager.get_order_content(order17.get_id());  //再取
+        if (ret19 != std::nullopt) {
+            std::cout << "订单编号：" << ret19->get_id() << "  ";
+            std::cout << "订单状态："
+                      << order_status_to_string(ret19->get_status()) << "  ";
+            std::cout << "交易方向："
+                      << direction_to_string(ret19->get_direction()) << "  ";
+            std::cout << "委托价格：" << ret19->get_price() << "  ";
+            std::cout << "委托数量：" << ret19->get_quantity() << std::endl;
+        } else {
+            std::cout << "查无此单！" << std::endl;
+        }
+    } else {
+        std::cout << "查无此单！" << std::endl;
+    }
+
+    bool ret20 = order_manager.apply_fill(123, 123);  //验证不存在id
+    std::cout << "验证不存在id时:" << std::endl;
+    if (ret20 == true) {
+        auto ret21 = order_manager.get_order_content(order17.get_id());  //再取
+        if (ret21 != std::nullopt) {
+            std::cout << "订单编号：" << ret21->get_id() << "  ";
+            std::cout << "订单状态："
+                      << order_status_to_string(ret21->get_status()) << "  ";
+            std::cout << "交易方向："
+                      << direction_to_string(ret21->get_direction()) << "  ";
+            std::cout << "委托价格：" << ret21->get_price() << "  ";
+            std::cout << "委托数量：" << ret21->get_quantity() << std::endl;
+        } else {
+            std::cout << "查无此单！" << std::endl;
+        }
+    } else {
+        std::cout << "查无此单！" << std::endl;
+    }
+
     return 0;
 }
