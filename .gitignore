@@ -3,6 +3,7 @@ trade
 *.o
 *.out
 build/
+build-asan/
 
 # IDE 个人配置
 .vscode/
