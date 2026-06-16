@@ -2,6 +2,7 @@
 #include <functional>  //std::greater<T>
 #include <list>
 #include <map>
+#include <vector>
 
 #include "Order.h"
 
@@ -9,7 +10,8 @@ class OrderBook {
 public:
     void add_order(const Order& order);  //添加订单函数（无论卖单还是买单）
     void print_book() const;             //打印订单薄
-    int match(const Order& order);  //撮合函数（买盘吃卖盘、卖盘吃买盘）
+    std::vector<Fill>
+    match(const Order& order);  //撮合函数（买盘吃卖盘、卖盘吃买盘）
 
 private:
     std::map<double, std::list<Order>, std::greater<double>>

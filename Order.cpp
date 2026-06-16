@@ -49,6 +49,8 @@ std::string order_status_to_string(OrderStatus o) {
         return "PENDING";  //挂单中、待成交
     case OrderStatus::FILLED:
         return "FILLED";  //已成交
+    case OrderStatus::PARTIALLY_FILLED:
+        return "PARTIALLY_FILLED";  //部分成交
     case OrderStatus::CANCELLED:
         return "CANCELLED";  //已撤
     case OrderStatus::REJECTED:

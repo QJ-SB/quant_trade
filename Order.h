@@ -8,8 +8,16 @@ enum class OrderDirection { Buy, Sell };  //交易方向，用强枚举类型【
 enum class OrderStatus {  //订单状态，用强枚举类型【类外定义】
     PENDING,              //挂单中、待成交
     FILLED,               //已成交
+    PARTIALLY_FILLED,     //部分成交
     CANCELLED,            //已撤
     REJECTED              //被拒
+};
+
+struct Fill {  //撮合后返回的成交信息
+    uint64_t taker_id;
+    uint64_t maker_id;
+    int quantity;  //撮合成交的数量
+    double price;  //撮合成交价
 };
 
 //辅助函数：强枚举类型(交易方向) → 字符串

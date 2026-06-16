@@ -2,6 +2,7 @@
 
 #include <algorithm>  //std::min
 #include <iostream>
+#include <vector>
 
 
 void OrderBook::add_order(const Order& order) {
@@ -32,9 +33,10 @@ void OrderBook::print_book() const {
     }
 }
 
-int OrderBook::match(const Order& order) {
+std::vector<Fill> OrderBook::match(const Order& order) {
     //【共用部分】
     int remaining = order.get_quantity();  // 局部的买、卖单余量跟踪
+    std::vector<Fill> fills;               //记录返回的成交信息
 
     //【买吃卖】如果是新单是买单
     if (order.get_direction() == OrderDirection::Buy) {
@@ -47,16 +49,24 @@ int OrderBook::match(const Order& order) {
             auto& maker =
                 asks_it->second.front();  // 拿到卖盘起始单的“队头”（挂单者）
 
-            int fill = std::min(remaining,
-                                maker.get_quantity());  // 装填“成交量缓冲区”
+            int fill_amount =
+                std::min(remaining,
+                         maker.get_quantity());  // 装填“成交量缓冲区”
             double trade_price = asks_it->first;  // 成交价 = 卖盘“best ask”
-            std::cout << "成交  价：" << trade_price << " 量：" << fill
+            std::cout << "成交  价：" << trade_price << " 量：" << fill_amount
                       << " (taker:" << order.get_id()
                       << " maker:" << maker.get_id() << ")"
                       << std::endl;  // 打印 ———— maker：挂单者，taker：吃单者
 
-            maker.reduce_quantity(fill);  // 卖盘队头-扣减成交量
-            remaining -= fill;            // 新单余量-跟踪更新
+            maker.reduce_quantity(fill_amount);  // 卖盘队头-扣减成交量
+            remaining -= fill_amount;            // 新单余量-跟踪更新
+
+            Fill fill_info;  //填充此级撮合的成交信息（特意在pop_front前填充）
+            fill_info.taker_id = order.get_id();
+            fill_info.maker_id = maker.get_id();
+            fill_info.quantity = fill_amount;
+            fill_info.price = trade_price;
+            fills.push_back(fill_info);  // push到返回成交信息的容器里
 
             if (0 == maker.get_quantity()) {  // 如果队头被吃完
                 asks_it->second.pop_front();  // 队头出队，后续补队头
@@ -75,16 +85,24 @@ int OrderBook::match(const Order& order) {
             auto& maker =
                 bids_it->second.front();  // 拿到买盘起始单的“队头”（挂单者）
 
-            int fill = std::min(remaining,
-                                maker.get_quantity());  // 装填“成交量缓冲区”
+            int fill_amount =
+                std::min(remaining,
+                         maker.get_quantity());  // 装填“成交量缓冲区”
             double trade_price = bids_it->first;  // 成交价 = 买盘“best bid”
-            std::cout << "成交  价：" << trade_price << " 量：" << fill
+            std::cout << "成交  价：" << trade_price << " 量：" << fill_amount
                       << " (taker:" << order.get_id()
                       << " maker:" << maker.get_id() << ")"
                       << std::endl;  // 打印 ———— maker：挂单者，taker：吃单者
 
-            maker.reduce_quantity(fill);  // 买盘队头-扣减成交量
-            remaining -= fill;            // 新单余量-跟踪更新
+            maker.reduce_quantity(fill_amount);  // 买盘队头-扣减成交量
+            remaining -= fill_amount;            // 新单余量-跟踪更新
+
+            Fill fill_info;  //填充此级撮合的成交信息（特意在pop_front前填充）
+            fill_info.taker_id = order.get_id();
+            fill_info.maker_id = maker.get_id();
+            fill_info.quantity = fill_amount;
+            fill_info.price = trade_price;
+            fills.push_back(fill_info);  // push到返回成交信息的容器里
 
             if (0 == maker.get_quantity()) {  // 如果队头被吃完
                 bids_it->second.pop_front();  // 队头出队，后续补队头
@@ -96,12 +114,13 @@ int OrderBook::match(const Order& order) {
     }
 
     // 【共用部分】循环吃单结束后：
+    // 若撮合有剩余：
     if (remaining > 0) {  // 如果新的买、卖单-没吃完-卖、买盘
         Order leftover = order;  // 拷贝构造“新单拷贝”（因为新单是const）
         leftover.set_quantity(remaining);  // 撮合的余量-回挂-新单拷贝
         add_order(leftover);  // 调用orderbook内部添加新单职能
     }
 
-    //【共用部分】
-    return remaining;  // 最后返回撮合后新单的余量
+    // 返回Fill-成交信息：
+    return fills;  // 最后返回本次撮合产生的成交记录
 }
