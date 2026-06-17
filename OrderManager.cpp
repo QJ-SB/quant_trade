@@ -3,6 +3,8 @@
 #include <cassert>  //assert()
 #include <iostream>
 
+#include "Order.h"
+
 
 bool OrderManager::add_order(const Order& ord) {
     auto ret = m_orders.insert({ord.get_id(), ord});
@@ -16,6 +18,10 @@ uint64_t OrderManager::get_order_size() const {
 void OrderManager::print_order() const {
     for (const auto& [id, ord] : m_orders) {
         std::cout << "订单编号：" << id << "  ";
+        std::cout << "订单状态：" << order_status_to_string(ord.get_status())
+                  << "  ";
+        std::cout << "订单方向：" << direction_to_string(ord.get_direction())
+                  << "  ";
         std::cout << "委托价格：" << ord.get_price() << "  ";
         std::cout << "委托数量：" << ord.get_quantity() << std::endl;
     }
