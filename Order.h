@@ -21,7 +21,7 @@ struct Fill {  //撮合后返回的成交信息
 };
 
 //辅助函数：强枚举类型(交易方向) → 字符串
-std::string direction_to_string(OrderDirection d);
+std::string order_direction_to_string(OrderDirection d);
 
 //辅助函数：强枚举类型（订单状态）→ 字符串
 std::string order_status_to_string(OrderStatus o);

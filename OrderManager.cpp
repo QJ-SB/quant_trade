@@ -20,8 +20,8 @@ void OrderManager::print_order() const {
         std::cout << "订单编号：" << id << "  ";
         std::cout << "订单状态：" << order_status_to_string(ord.get_status())
                   << "  ";
-        std::cout << "订单方向：" << direction_to_string(ord.get_direction())
-                  << "  ";
+        std::cout << "订单方向："
+                  << order_direction_to_string(ord.get_direction()) << "  ";
         std::cout << "委托价格：" << ord.get_price() << "  ";
         std::cout << "委托数量：" << ord.get_quantity() << std::endl;
     }

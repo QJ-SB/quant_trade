@@ -37,7 +37,7 @@ void Order::set_quantity(int quantity) {
     m_quantity = quantity;
 }
 
-std::string direction_to_string(OrderDirection d) {
+std::string order_direction_to_string(OrderDirection d) {
     if (d == OrderDirection::Buy)
         return "Buy";
     return "Sell";
