@@ -13,4 +13,10 @@ if(ENABLE_ASAN)
 endif()
 
 # 可执行文件 trade，由这些 .cpp 编译（以后加类就往后面续文件名）
-add_executable(trade main.cpp Tick.cpp Order.cpp OrderManager.cpp OrderBook.cpp)
+add_executable(trade
+            main.cpp
+            Tick.cpp
+            Order.cpp
+            OrderManager.cpp 
+            OrderBook.cpp 
+            Exchange.cpp)
