@@ -1,15 +1,26 @@
 #include "OrderBook.h"
 
 #include <algorithm>  //std::min
+#include <cassert>    //assert()
 #include <iostream>
 #include <vector>
 
+#include "Order.h"
+
 
 void OrderBook::add_order(const Order& order) {
-    if (order.get_direction() == OrderDirection::Buy) {
-        m_bids[order.get_price()].push_back(order);
-    } else {
-        m_asks[order.get_price()].push_back(order);
+    double key = order.get_price();  //统一拿到无论是bids还是asks的[key]
+
+    if (order.get_direction() == OrderDirection::Buy) {  //买方
+        auto& lst = m_bids[key];                         //查一次，用两次
+        auto ret =
+            lst.insert(lst.end(), order);  //找到list，然后尾插,并返回迭代器
+        m_order_index[order.get_id()] = ret;  // list<Order>迭代器存入 O(1)索引
+
+    } else {  //卖方
+        auto& lst = m_asks[key];
+        auto ret = lst.insert(lst.end(), order);
+        m_order_index[order.get_id()] = ret;
     }
 }
 
@@ -71,10 +82,11 @@ std::vector<Fill> OrderBook::match(const Order& order) {
             fills.push_back(fill_info);  // push到返回成交信息的容器里
 
             if (0 == maker.get_quantity()) {  // 如果队头被吃完
+                // 删除list队头的本地索引（注意别用maker，它要出队）
+                m_order_index.erase(fill_info.maker_id);
                 asks_it->second.pop_front();  // 队头出队，后续补队头
-                if (asks_it->second.empty()) {  // 没有队员了
-                    m_asks.erase(asks_it);      // 卖盘移除节点
-                }
+                if (asks_it->second.empty())  // 没有队员了
+                    m_asks.erase(asks_it);    // 卖盘移除节点
             }
         }
     } else {  // 【卖吃买】如果是新单是卖单
@@ -107,6 +119,8 @@ std::vector<Fill> OrderBook::match(const Order& order) {
             fills.push_back(fill_info);  // push到返回成交信息的容器里
 
             if (0 == maker.get_quantity()) {  // 如果队头被吃完
+                // 删除list队头的本地索引（注意别用maker，它要出队）
+                m_order_index.erase(fill_info.maker_id);
                 bids_it->second.pop_front();  // 队头出队，后续补队头
                 if (bids_it->second.empty()) {  // 没有队员了
                     m_bids.erase(bids_it);      // 买盘移除节点
@@ -125,4 +139,32 @@ std::vector<Fill> OrderBook::match(const Order& order) {
 
     // 返回Fill-成交信息：
     return fills;  // 最后返回本次撮合产生的成交记录
+}
+
+bool OrderBook::cancel(uint64_t id) {
+    auto idx_map_it = m_order_index.find(id);  //先查id存不存在
+    if (idx_map_it == m_order_index.end())
+        return false;  // id不存在直接返回false，存在👇
+
+    auto order_list_it = idx_map_it->second;  //拿到list<Order>的迭代器
+    //进一步判断买卖方向，判断要去asks还是bids里erase
+    if (order_list_it->get_direction() == OrderDirection::Buy) {  //买盘
+        double key = order_list_it->get_price();  //统一获取m_bids的[key]
+        // find()比较兜底，[key]不存在会直接插
+        auto map_it = m_bids.find(key);  //通过key找到对应list<Order>迭代器
+        assert(map_it != m_bids.end());  //断言保证索引里有，book里肯定有
+        map_it->second.erase(order_list_it);  // erase掉list<Order>的迭代器
+        if (map_it->second.empty())  //如果该list<Order>被erase完了
+            m_bids.erase(map_it);    // erase掉m_bids的迭代器
+    } else {                         //卖盘
+        double key = order_list_it->get_price();  //统一获取m_asks的[key]
+        auto map_it = m_asks.find(key);
+        assert(map_it != m_asks.end());
+        map_it->second.erase(order_list_it);
+        if (map_it->second.empty())
+            m_asks.erase(map_it);
+    }
+    //最后统一删除维护的哈希索引副本
+    m_order_index.erase(id);
+    return true;
 }
