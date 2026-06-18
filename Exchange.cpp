@@ -14,7 +14,7 @@ std::vector<Fill> Exchange::submit_order(const Order& order) {
         [[maybe_unused]] bool ok =
             m_order_manager.apply_fill(fill.taker_id,
                                        fill.quantity);  //更新OMS中taker
-        assert(ok);                                     //断言检查
+        assert(ok);                                     //断言检查返回bool
 
         ok = m_order_manager.apply_fill(fill.maker_id,
                                         fill.quantity);  //更新OMS中maker
@@ -30,4 +30,14 @@ const OrderManager& Exchange::get_order_manager() const {
 
 const OrderBook& Exchange::get_order_book() const {
     return m_order_book;
+}
+
+bool Exchange::cancel_order(uint64_t id) {
+    bool ok1 = m_order_book.cancel(id);  //接收orderbook是否cancel成功
+    if (ok1) {  // book撤成功，OMS同步设置状态
+        [[maybe_unused]] bool ok2 =
+            m_order_manager.update_order_status(id, OrderStatus::CANCELLED);
+        assert(ok2);  //断言检查返回bool
+    }
+    return ok1;  // book没撤成,OMS不动，状态同步
 }
