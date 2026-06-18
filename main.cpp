@@ -114,6 +114,56 @@ int main() {
     order_manager3.print_order();  //再打印
     order_book3.print_book();
 
+    // 验证撤单函数
+    std::cout << std::endl;
+    std::cout << "=======验证撤单=======" << std::endl;
+    std::cout << "-------撤单存在id" << std::endl;
+    bool ret1 = exchange3.cancel_order(order6.get_id());  //撤单3001
+    if (!ret1)
+        std::cout << "撤单失败！id不存在！" << std::endl;
+    order_manager3.print_order();  //打印
+    order_book3.print_book();
+    std::cout << "-------撤单存在id成功后继续验证备份索引干净：" << std::endl;
+    bool ret2 = exchange3.cancel_order(order6.get_id());
+    if (!ret2)
+        std::cout << "撤单失败！id不存在！" << std::endl;
+    std::cout << "-------撤单不存在id" << std::endl;
+    bool ret3 = exchange3.cancel_order(123);
+    if (!ret3)
+        std::cout << "撤单失败！id不存在！" << std::endl;
+    order_manager3.print_order();  //打印
+    order_book3.print_book();
+    std::cout << "-------撤单同档多单的队中" << std::endl;
+    Order order9(3003, OrderDirection::Buy, 161.2, 70);
+    Order order10(3004, OrderDirection::Buy, 161.2, 70);
+    exchange3.submit_order(order9);
+    exchange3.submit_order(order10);
+    std::cout << "-------撤前：" << std::endl;
+    order_manager3.print_order();  //打印
+    order_book3.print_book();
+    exchange3.cancel_order(order9.get_id());
+    std::cout << "-------撤后：" << std::endl;
+    order_manager3.print_order();  //打印
+    order_book3.print_book();
+    std::cout << "-------撤单同档多单的队头" << std::endl;
+    exchange3.cancel_order(order7.get_id());
+    std::cout << "-------撤后：" << std::endl;
+    order_manager3.print_order();  //打印
+    order_book3.print_book();
+
+    std::cout << "-------撤单PARTIALLY_FILLED单" << std::endl;
+    std::cout << "-------撤前：" << std::endl;
+    order_manager2.print_order();  //打印
+    order_book2.print_book();
+    exchange2.cancel_order(order8.get_id());
+    std::cout << "-------撤后：" << std::endl;
+    order_manager2.print_order();  //打印
+    order_book2.print_book();
+
+    std::cout << "-------撤单FILLED单" << std::endl;
+    if (!exchange2.cancel_order(order5.get_id()))
+        std::cout << "撤单失败！id不存在！" << std::endl;
+
 
     return 0;
 }
