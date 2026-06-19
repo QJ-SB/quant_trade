@@ -8,6 +8,14 @@ set(CMAKE_CXX_STANDARD 17)              # 用 C++17（= g++ 的 -std=c++17）
 set(CMAKE_CXX_STANDARD_REQUIRED ON)     # 强制 C++17，不许静默降级
 
 
+#【CMake配置导出】
+# 开启导出编译命令数据库 compile_commands.json
+# 生成文件位于 build/compile_commands.json
+# 作用：给Clangd、VSCode C/C++插件、Clang-Tidy等代码分析工具读取
+# 工具通过该文件获取每个cpp的编译参数、头文件路径、宏定义，实现代码补全、静态检查、跳转无报错
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
+
 #【ASan块】
 # Sanitizer 开关：日常 OFF；测试内存/UB 时 `cmake -DENABLE_ASAN=ON ..` 打开
 # 注意：编译和链接都要挂 sanitizer，否则链接报 undefined reference
@@ -69,7 +77,9 @@ enable_testing()
 # ---
 # 编译生成专门运行单元测试的可执行程序 unit_tests
 # 仅传入测试源码文件 test/test_smoke.cpp，存放各类GTest测试逻辑
-add_executable(unit_tests test/test_smoke.cpp)
+add_executable(unit_tests
+            test/test_smoke.cpp
+            test/test_order_manager.cpp)
 # ---
 # 为测试程序配置依赖链接
 # PRIVATE：仅unit_tests内部使用这些依赖，不会传递给其他上层目标
