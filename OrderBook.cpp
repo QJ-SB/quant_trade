@@ -26,7 +26,8 @@ void OrderBook::match_against(BookMap& book_side, const Order& taker,
         int fill_amount = std::min(remaining, maker.get_quantity());
         double trade_price = it->first;
         // 终端打印成交信息
-        std::cout << "成交  价：" << trade_price << " 量：" << fill_amount
+        std::cout << "【成交】" << std::endl;
+        std::cout << "价：" << trade_price << " 量：" << fill_amount
                   << " (taker:" << taker.get_id() << " maker:" << maker.get_id()
                   << ")" << std::endl;
 
