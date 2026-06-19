@@ -7,17 +7,61 @@
 
 #include "Order.h"
 
+// 模板函数（封装原买方-卖方while循环）- 只在OrderBook.cpp中用
+// 模板参数BookMap：订单簿红黑树。外界传入引用&，内部直接修改带出。
+template <typename BookMap>
+void OrderBook::match_against(BookMap& book_side, const Order& taker,
+                              int& remaining, std::vector<Fill>& fills) {
+    // map.key_comp()取less、greater函子，operator()重载调用
+    // 修改逻辑："a <= b → !(a>b)"👇
+    // “买吃卖”自动匹配less比较器，“卖吃买”自动匹配greater比较器
+    // 【注意此while循环内“条件1”和“条件2”自动保障“条件3”不为空（防触发UB！）】
+    while (remaining > 0 && !book_side.empty() &&
+           !book_side.key_comp()(taker.get_price(), book_side.begin()->first)) {
+        auto it = book_side.begin();       // 拿到订单簿买盘或卖盘的迭代器
+        auto& maker = it->second.front();  // 通过迭代器拿到list<Order>里的队头
+
+        // 成交数量 = min(吃盘单，盘余量)
+        // 成交价格 = 盘余量队头价格
+        int fill_amount = std::min(remaining, maker.get_quantity());
+        double trade_price = it->first;
+        // 终端打印成交信息
+        std::cout << "成交  价：" << trade_price << " 量：" << fill_amount
+                  << " (taker:" << taker.get_id() << " maker:" << maker.get_id()
+                  << ")" << std::endl;
+
+        maker.reduce_quantity(
+            fill_amount);          // 调用盘内订单内部成员函数扣减成交量
+        remaining -= fill_amount;  // 吃盘单余量
+
+        Fill fill_info;  // 填充撮合的“成交信息结构体”
+        fill_info.taker_id = taker.get_id();
+        fill_info.maker_id =
+            maker.get_id();  // 【注意在maker.pop_front()之前，谨防UAF！】
+        fill_info.quantity = fill_amount;
+        fill_info.price = trade_price;
+        fills.push_back(fill_info);  // 装入传入的vector-fills
+
+        // 如果订单簿盘内买单、卖单被“吃完”
+        if (0 == maker.get_quantity()) {
+            m_order_index.erase(fill_info.maker_id);  // 先删本地索引
+            it->second.pop_front();   // 吃空的空队头出队，后续自动升为队头
+            if (it->second.empty())   // 没有后续，整个list为空
+                book_side.erase(it);  // 直接erase该map节点
+        }
+    }
+}
 
 void OrderBook::add_order(const Order& order) {
-    double key = order.get_price();  //统一拿到无论是bids还是asks的[key]
+    double key = order.get_price();  // 统一拿到无论是bids还是asks的[key]
 
-    if (order.get_direction() == OrderDirection::Buy) {  //买方
-        auto& lst = m_bids[key];                         //查一次，用两次
+    if (order.get_direction() == OrderDirection::Buy) {  // 买方
+        auto& lst = m_bids[key];                         // 查一次，用两次
         auto ret =
-            lst.insert(lst.end(), order);  //找到list，然后尾插,并返回迭代器
+            lst.insert(lst.end(), order);     // 找到list，然后尾插,并返回迭代器
         m_order_index[order.get_id()] = ret;  // list<Order>迭代器存入 O(1)索引
 
-    } else {  //卖方
+    } else {  // 卖方
         auto& lst = m_asks[key];
         auto ret = lst.insert(lst.end(), order);
         m_order_index[order.get_id()] = ret;
@@ -47,94 +91,30 @@ void OrderBook::print_book() const {
 }
 
 std::vector<Fill> OrderBook::match(const Order& order) {
-    //【共用部分】
-    int remaining = order.get_quantity();  // 局部的买、卖单余量跟踪
-    std::vector<Fill> fills;               //记录返回的成交信息
+    // 【共用部分】
+    int remaining = order.get_quantity();  // 吃盘单余量跟踪
+    std::vector<Fill> fills;               // 装载撮合的成交信息
 
-    //【买吃卖】如果是新单是买单
+    // 【买吃卖】新单taker是买单
     if (order.get_direction() == OrderDirection::Buy) {
         // while循环1：
         // 【买单吃卖盘】：买单有余量 && 卖盘非空 &&
         // 买单价>=卖盘最低价（成交价）
-        while (remaining > 0 && !m_asks.empty() &&
-               order.get_price() >= m_asks.begin()->first) {
-            auto asks_it = m_asks.begin();  // 拿到卖盘起始迭代器
-            auto& maker =
-                asks_it->second.front();  // 拿到卖盘起始单的“队头”（挂单者）
-
-            int fill_amount =
-                std::min(remaining,
-                         maker.get_quantity());  // 装填“成交量缓冲区”
-            double trade_price = asks_it->first;  // 成交价 = 卖盘“best ask”
-            std::cout << "成交  价：" << trade_price << " 量：" << fill_amount
-                      << " (taker:" << order.get_id()
-                      << " maker:" << maker.get_id() << ")"
-                      << std::endl;  // 打印 ———— maker：挂单者，taker：吃单者
-
-            maker.reduce_quantity(fill_amount);  // 卖盘队头-扣减成交量
-            remaining -= fill_amount;            // 新单余量-跟踪更新
-
-            Fill fill_info;  //填充此级撮合的成交信息（特意在pop_front前填充）
-            fill_info.taker_id = order.get_id();
-            fill_info.maker_id = maker.get_id();
-            fill_info.quantity = fill_amount;
-            fill_info.price = trade_price;
-            fills.push_back(fill_info);  // push到返回成交信息的容器里
-
-            if (0 == maker.get_quantity()) {  // 如果队头被吃完
-                // 删除list队头的本地索引（注意别用maker，它要出队）
-                m_order_index.erase(fill_info.maker_id);
-                asks_it->second.pop_front();  // 队头出队，后续补队头
-                if (asks_it->second.empty())  // 没有队员了
-                    m_asks.erase(asks_it);    // 卖盘移除节点
-            }
-        }
-    } else {  // 【卖吃买】如果是新单是卖单
+        match_against(m_asks, order, remaining, fills);  // 调用内部模板函数
+    } else {
+        // 【卖吃买】新单taker是卖单
         // while循环2：
         // 【卖单吃买盘】：卖单有余量 && 买盘非空 &&
         // 卖单价<=买盘最高价（成交价）
-        while (remaining > 0 && !m_bids.empty() &&
-               order.get_price() <= m_bids.begin()->first) {
-            auto bids_it = m_bids.begin();  // 拿到买盘起始迭代器
-            auto& maker =
-                bids_it->second.front();  // 拿到买盘起始单的“队头”（挂单者）
-
-            int fill_amount =
-                std::min(remaining,
-                         maker.get_quantity());  // 装填“成交量缓冲区”
-            double trade_price = bids_it->first;  // 成交价 = 买盘“best bid”
-            std::cout << "成交  价：" << trade_price << " 量：" << fill_amount
-                      << " (taker:" << order.get_id()
-                      << " maker:" << maker.get_id() << ")"
-                      << std::endl;  // 打印 ———— maker：挂单者，taker：吃单者
-
-            maker.reduce_quantity(fill_amount);  // 买盘队头-扣减成交量
-            remaining -= fill_amount;            // 新单余量-跟踪更新
-
-            Fill fill_info;  //填充此级撮合的成交信息（特意在pop_front前填充）
-            fill_info.taker_id = order.get_id();
-            fill_info.maker_id = maker.get_id();
-            fill_info.quantity = fill_amount;
-            fill_info.price = trade_price;
-            fills.push_back(fill_info);  // push到返回成交信息的容器里
-
-            if (0 == maker.get_quantity()) {  // 如果队头被吃完
-                // 删除list队头的本地索引（注意别用maker，它要出队）
-                m_order_index.erase(fill_info.maker_id);
-                bids_it->second.pop_front();  // 队头出队，后续补队头
-                if (bids_it->second.empty()) {  // 没有队员了
-                    m_bids.erase(bids_it);      // 买盘移除节点
-                }
-            }
-        }
+        match_against(m_bids, order, remaining, fills);  // 调用内部模板函数
     }
 
     // 【共用部分】循环吃单结束后：
     // 若撮合有剩余：
-    if (remaining > 0) {  // 如果新的买、卖单-没吃完-卖、买盘
+    if (remaining > 0) {         // 新的买、卖单taker，没撮合消耗光
         Order leftover = order;  // 拷贝构造“新单拷贝”（因为新单是const）
-        leftover.set_quantity(remaining);  // 撮合的余量-回挂-新单拷贝
-        add_order(leftover);  // 调用orderbook内部添加新单职能
+        leftover.set_quantity(remaining);  // taker的余量写入拷贝
+        add_order(leftover);               // 调用OrderBook内部添加新单职能
     }
 
     // 返回Fill-成交信息：
@@ -142,29 +122,29 @@ std::vector<Fill> OrderBook::match(const Order& order) {
 }
 
 bool OrderBook::cancel(uint64_t id) {
-    auto idx_map_it = m_order_index.find(id);  //先查id存不存在
+    auto idx_map_it = m_order_index.find(id);  // 先查id存不存在
     if (idx_map_it == m_order_index.end())
         return false;  // id不存在直接返回false，存在👇
 
-    auto order_list_it = idx_map_it->second;  //拿到list<Order>的迭代器
-    //进一步判断买卖方向，判断要去asks还是bids里erase
-    if (order_list_it->get_direction() == OrderDirection::Buy) {  //买盘
-        double key = order_list_it->get_price();  //统一获取m_bids的[key]
+    auto order_list_it = idx_map_it->second;  // 拿到list<Order>的迭代器
+    // 进一步判断买卖方向，判断要去asks还是bids里erase
+    if (order_list_it->get_direction() == OrderDirection::Buy) {  // 买盘
+        double key = order_list_it->get_price();  // 统一获取m_bids的[key]
         // find()比较兜底，[key]不存在会直接插
-        auto map_it = m_bids.find(key);  //通过key找到对应list<Order>迭代器
-        assert(map_it != m_bids.end());  //断言保证索引里有，book里肯定有
+        auto map_it = m_bids.find(key);  // 通过key找到对应list<Order>迭代器
+        assert(map_it != m_bids.end());  // 断言保证索引里有，book里肯定有
         map_it->second.erase(order_list_it);  // erase掉list<Order>的迭代器
-        if (map_it->second.empty())  //如果该list<Order>被erase完了
-            m_bids.erase(map_it);    // erase掉m_bids的迭代器
-    } else {                         //卖盘
-        double key = order_list_it->get_price();  //统一获取m_asks的[key]
+        if (map_it->second.empty())           // 如果该list<Order>被erase完了
+            m_bids.erase(map_it);             // erase掉m_bids的迭代器
+    } else {                                  // 卖盘
+        double key = order_list_it->get_price();  // 统一获取m_asks的[key]
         auto map_it = m_asks.find(key);
         assert(map_it != m_asks.end());
         map_it->second.erase(order_list_it);
         if (map_it->second.empty())
             m_asks.erase(map_it);
     }
-    //最后统一删除维护的哈希索引副本
+    // 最后统一删除维护的哈希索引副本
     m_order_index.erase(id);
     return true;
 }
