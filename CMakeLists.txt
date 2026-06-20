@@ -79,7 +79,8 @@ enable_testing()
 # 仅传入测试源码文件 test/test_smoke.cpp，存放各类GTest测试逻辑
 add_executable(unit_tests
             test/test_smoke.cpp
-            test/test_order_manager.cpp)
+            test/test_order_manager.cpp
+            test/test_order_book.cpp)
 # ---
 # 为测试程序配置依赖链接
 # PRIVATE：仅unit_tests内部使用这些依赖，不会传递给其他上层目标
