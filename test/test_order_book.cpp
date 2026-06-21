@@ -179,7 +179,7 @@ TEST(OrderBookTest,
      SellOrder_EatsTwoBuyOrders_SamePrice_EarlierOrderGetsPriority) {
     OrderBook ob;
     // inline构造买盘
-    ob.add_order(Order(1, OrderDirection::Buy, 100.0, 50));  //卖盘maker-先挂
+    ob.add_order(Order(1, OrderDirection::Buy, 100.0, 50));  //买盘maker-先挂
     ob.add_order(Order(2, OrderDirection::Buy, 100.0, 50));  //后挂（同价）
 
     // match()构造对手盘
@@ -195,4 +195,16 @@ TEST(OrderBookTest,
 
     // cancel探针检测
     EXPECT_TRUE(ob.cancel(2));  //订单2还在
+}
+
+//测试match()：match已经cancel的单
+TEST(OrderBookTest, CancelledOrderExcludedFromMatching) {
+    OrderBook ob;
+    ob.add_order(Order(1, OrderDirection::Buy, 100.0, 50));
+
+    EXPECT_TRUE(ob.cancel(1));
+    auto fills1 = ob.match(Order(2, OrderDirection::Sell, 99.0, 50));
+    EXPECT_TRUE(fills1.empty());
+    EXPECT_FALSE(ob.cancel(1));
+    EXPECT_TRUE(ob.cancel(2));
 }
