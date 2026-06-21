@@ -104,3 +104,95 @@ TEST(OrderBookTest, NonCrossingTakerRestsNoFill) {
     EXPECT_TRUE(ob.cancel(2));  //验证taker挂进去了
     EXPECT_TRUE(ob.cancel(1));  //验证maker还在
 }
+
+//测试match()：买单吃卖盘（验证maker里的价格priority）
+TEST(OrderBookTest, BuyOrder_EatsTwoSellLevels_LowerPriceGetsPriority) {
+    OrderBook ob;
+    // inline构造卖盘
+    ob.add_order(Order(1, OrderDirection::Sell, 101.0, 50));  //卖盘maker-先挂
+    ob.add_order(Order(2, OrderDirection::Sell, 100.0, 50));  //后挂
+
+    // match()构造对手盘
+    auto fills1 = ob.match(
+        Order(3, OrderDirection::Buy, 102.0, 50));  //买单taker吃完一级卖盘
+    ASSERT_EQ(fills1.size(),
+              1u);  // vector.size()返回size_t，值为1【刹车位-防UB】
+    EXPECT_EQ(fills1.front().maker_id, 2u);  // maker是uint64_t，值为2
+    EXPECT_EQ(fills1.front().taker_id, 3u);  // taker是uint64_t，值为3
+    EXPECT_EQ(fills1.front().price,
+              100.0);  //不用DOUBLE_EQ，因为没做浮点运算，强相等，值为100.0
+    EXPECT_EQ(fills1.front().quantity, 50);  // quantity-int，值为50
+
+    // cancel探针检测
+    EXPECT_TRUE(ob.cancel(1));  //订单1还在
+}
+
+//测试match()：买单吃卖盘（验证maker里的时间priority）
+TEST(OrderBookTest,
+     BuyOrder_EatsTwoSellOrders_SamePrice_EarlierOrderGetsPriority) {
+    OrderBook ob;
+    // inline构造卖盘
+    ob.add_order(Order(1, OrderDirection::Sell, 100.0, 50));  //卖盘maker-先挂
+    ob.add_order(Order(2, OrderDirection::Sell, 100.0, 50));  //后挂（同价）
+
+    // match()构造对手盘
+    auto fills1 = ob.match(
+        Order(3, OrderDirection::Buy, 101.0, 50));  //买单taker吃完一级卖盘
+    ASSERT_EQ(fills1.size(),
+              1u);  // vector.size()返回size_t，值为1【刹车位-防UB】
+    EXPECT_EQ(fills1.front().maker_id, 1u);  // maker是uint64_t，值为1
+    EXPECT_EQ(fills1.front().taker_id, 3u);  // taker是uint64_t，值为3
+    EXPECT_EQ(fills1.front().price,
+              100.0);  //不用DOUBLE_EQ，因为没做浮点运算，强相等，值为100.0
+    EXPECT_EQ(fills1.front().quantity, 50);  // quantity-int，值为50
+
+    // cancel探针检测
+    EXPECT_TRUE(ob.cancel(2));  //订单2还在
+}
+
+//【镜像】
+//测试match()：卖单吃买盘（验证maker里的价格priority）
+TEST(OrderBookTest, SellOrder_EatsTwoBuyLevels_HigherPriceGetsPriority) {
+    OrderBook ob;
+    // inline构造买盘
+    ob.add_order(Order(1, OrderDirection::Buy, 99.0, 50));  //买盘maker-先挂
+    ob.add_order(Order(2, OrderDirection::Buy, 100.0, 50));  //后挂
+
+    // match()构造对手盘
+    auto fills1 = ob.match(
+        Order(3, OrderDirection::Sell, 98.0, 50));  //卖单taker吃完一级买盘
+    ASSERT_EQ(fills1.size(),
+              1u);  // vector.size()返回size_t，值为1【刹车位-防UB】
+    EXPECT_EQ(fills1.front().maker_id, 2u);  // maker是uint64_t，值为2
+    EXPECT_EQ(fills1.front().taker_id, 3u);  // taker是uint64_t，值为3
+    EXPECT_EQ(fills1.front().price,
+              100.0);  //不用DOUBLE_EQ，因为没做浮点运算，强相等，值为100.0
+    EXPECT_EQ(fills1.front().quantity, 50);  // quantity-int，值为50
+
+    // cancel探针检测
+    EXPECT_TRUE(ob.cancel(1));  //订单1还在
+}
+
+//【镜像】
+//测试match()：卖单吃买盘（验证maker里的时间priority）
+TEST(OrderBookTest,
+     SellOrder_EatsTwoBuyOrders_SamePrice_EarlierOrderGetsPriority) {
+    OrderBook ob;
+    // inline构造买盘
+    ob.add_order(Order(1, OrderDirection::Buy, 100.0, 50));  //卖盘maker-先挂
+    ob.add_order(Order(2, OrderDirection::Buy, 100.0, 50));  //后挂（同价）
+
+    // match()构造对手盘
+    auto fills1 = ob.match(
+        Order(3, OrderDirection::Sell, 99.0, 50));  //卖单taker吃完一级买盘
+    ASSERT_EQ(fills1.size(),
+              1u);  // vector.size()返回size_t，值为1【刹车位-防UB】
+    EXPECT_EQ(fills1.front().maker_id, 1u);  // maker是uint64_t，值为1
+    EXPECT_EQ(fills1.front().taker_id, 3u);  // taker是uint64_t，值为3
+    EXPECT_EQ(fills1.front().price,
+              100.0);  //不用DOUBLE_EQ，因为没做浮点运算，强相等，值为100.0
+    EXPECT_EQ(fills1.front().quantity, 50);  // quantity-int，值为50
+
+    // cancel探针检测
+    EXPECT_TRUE(ob.cancel(2));  //订单2还在
+}
