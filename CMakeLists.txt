@@ -80,7 +80,8 @@ enable_testing()
 add_executable(unit_tests
             test/test_smoke.cpp
             test/test_order_manager.cpp
-            test/test_order_book.cpp)
+            test/test_order_book.cpp
+            test/test_exchange.cpp)
 # ---
 # 为测试程序配置依赖链接
 # PRIVATE：仅unit_tests内部使用这些依赖，不会传递给其他上层目标
