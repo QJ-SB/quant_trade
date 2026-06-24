@@ -123,3 +123,30 @@ TEST_F(ExchangeTest, TakerRemainderBecomesMakerThenEaten) {
     EXPECT_FALSE(ex.cancel_order(2));
     EXPECT_FALSE(ex.cancel_order(3));
 }
+
+// 关切4：重复 id 提交应被拒，不得在 book 留下孤儿幽灵节点
+TEST_F(ExchangeTest, DuplicateIdSubmitRejectedNoGhostLiquidity) {
+    // ① 挂一张不交叉的卖单 id=7，建立节点 A
+    auto f1 = ex.submit_order(Order(7, OrderDirection::Sell, 100.0, 10));
+    EXPECT_TRUE(f1.empty());
+
+    // ② 同一 id=7 重复提交：应被拒，不进 book
+    //   注意：f2 为空与"加成功但未成交"同形，这里不是判别断言，仅记录拒单返空
+    auto f2 = ex.submit_order(Order(7, OrderDirection::Sell, 100.0, 10));
+    EXPECT_TRUE(f2.empty());
+
+    // ③ 撤 id=7。fixed 删唯一节点盘口空；buggy 删 B 留孤儿 A
+    ASSERT_TRUE(ex.cancel_order(7));  // 前提守卫：必须撤得掉
+
+    // ④ taker 吃 100 价位，把孤儿现形
+    auto f4 = ex.submit_order(Order(8, OrderDirection::Buy, 100.0, 10));
+    // 【核心判别】fixed 盘口空 → 0 条成交；buggy 孤儿 A 存在 → 1 条成交
+    EXPECT_EQ(f4.size(), 0u);
+
+    // 强化判别：fixed 下 taker(8) 吃不到东西挂回买盘，残量仍 10
+    //   （buggy 下 8 吃了 A → qty 0，这条同样翻红，与上互证）
+    const OrderManager& om = ex.get_order_manager();
+    auto order8 = om.get_order_content(8);
+    ASSERT_TRUE(order8.has_value());
+    EXPECT_EQ(order8->get_quantity(), 10);
+}

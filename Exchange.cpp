@@ -6,7 +6,10 @@
 #include "Order.h"  //Fill结构体
 
 std::vector<Fill> Exchange::submit_order(const Order& order) {
-    m_order_manager.add_order(order);  //添加新订单进OMS
+    // 重复 id 拒单：add_order 返 false 即 id 已存在，不进 book 不撮合
+    if (!m_order_manager.add_order(order))
+        return {};
+
     std::vector<Fill> fills = m_order_book.match(
         order);  //在order book中撮合新订单（并拿到撮合后fills）
 
