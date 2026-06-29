@@ -18,7 +18,7 @@ void OrderBook::match_against(BookMap& book_side, const Order& taker,
     // 【注意此while循环内“条件1”和“条件2”自动保障“条件3”不为空（防触发UB！）】
     while (remaining > 0 && !book_side.empty() &&
            !book_side.key_comp()(taker.get_price(), book_side.begin()->first)) {
-        auto it = book_side.begin();       // 拿到订单簿买盘或卖盘的迭代器
+        auto it = book_side.begin();  // 拿到订单簿买盘或卖盘的迭代器
         auto& maker = it->second.front();  // 通过迭代器拿到list<Order>里的队头
 
         // 成交数量 = min(吃盘单，盘余量)
@@ -32,7 +32,7 @@ void OrderBook::match_against(BookMap& book_side, const Order& taker,
                   << ")" << std::endl;
 
         maker.reduce_quantity(
-            fill_amount);          // 调用盘内订单内部成员函数扣减成交量
+            fill_amount);  // 调用盘内订单内部成员函数扣减成交量
         remaining -= fill_amount;  // 吃盘单余量
 
         Fill fill_info;  // 填充撮合的“成交信息结构体”
@@ -46,7 +46,7 @@ void OrderBook::match_against(BookMap& book_side, const Order& taker,
         // 如果订单簿盘内买单、卖单被“吃完”
         if (0 == maker.get_quantity()) {
             m_order_index.erase(fill_info.maker_id);  // 先删本地索引
-            it->second.pop_front();   // 吃空的空队头出队，后续自动升为队头
+            it->second.pop_front();  // 吃空的空队头出队，后续自动升为队头
             if (it->second.empty())   // 没有后续，整个list为空
                 book_side.erase(it);  // 直接erase该map节点
         }
@@ -116,10 +116,10 @@ std::vector<Fill> OrderBook::match(const Order& order) {
 
     // 【共用部分】循环吃单结束后：
     // 若撮合有剩余：
-    if (remaining > 0) {         // 新的买、卖单taker，没撮合消耗光
+    if (remaining > 0) {  // 新的买、卖单taker，没撮合消耗光
         Order leftover = order;  // 拷贝构造“新单拷贝”（因为新单是const）
         leftover.set_quantity(remaining);  // taker的余量写入拷贝
-        add_order(leftover);               // 调用OrderBook内部添加新单职能
+        add_order(leftover);  // 调用OrderBook内部添加新单职能
     }
 
     // 返回Fill-成交信息：
@@ -139,9 +139,9 @@ bool OrderBook::cancel(uint64_t id) {
         auto map_it = m_bids.find(key);  // 通过key找到对应list<Order>迭代器
         assert(map_it != m_bids.end());  // 断言保证索引里有，book里肯定有
         map_it->second.erase(order_list_it);  // erase掉list<Order>的迭代器
-        if (map_it->second.empty())           // 如果该list<Order>被erase完了
-            m_bids.erase(map_it);             // erase掉m_bids的迭代器
-    } else {                                  // 卖盘
+        if (map_it->second.empty())  // 如果该list<Order>被erase完了
+            m_bids.erase(map_it);    // erase掉m_bids的迭代器
+    } else {                         // 卖盘
         double key = order_list_it->get_price();  // 统一获取m_asks的[key]
         auto map_it = m_asks.find(key);
         assert(map_it != m_asks.end());
