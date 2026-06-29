@@ -57,15 +57,19 @@ void OrderBook::add_order(const Order& order) {
     double key = order.get_price();  // 统一拿到无论是bids还是asks的[key]
 
     if (order.get_direction() == OrderDirection::Buy) {  // 买方
-        auto& lst = m_bids[key];                         // 查一次，用两次
+        auto& lst = m_bids[key];  // 查一次，用两次
         auto ret =
-            lst.insert(lst.end(), order);     // 找到list，然后尾插,并返回迭代器
-        m_order_index[order.get_id()] = ret;  // list<Order>迭代器存入 O(1)索引
+            lst.insert(lst.end(), order);  // 找到list，然后尾插,并返回迭代器
+        [[maybe_unused]] auto result = m_order_index.insert(
+            {order.get_id(), ret});  // list<Order>迭代器存入 O(1)索引
+        assert(result.second);  //上游OMS.add_order()没防住的重复id，到这直接炸
 
     } else {  // 卖方
         auto& lst = m_asks[key];
         auto ret = lst.insert(lst.end(), order);
-        m_order_index[order.get_id()] = ret;
+        [[maybe_unused]] auto result =
+            m_order_index.insert({order.get_id(), ret});
+        assert(result.second);
     }
 }
 
