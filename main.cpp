@@ -11,9 +11,9 @@
 int main() {
 
     // 构造Tick类实例
-    Tick tick1(100.5, 50);
-    Tick tick2(100.6, 51);
-    Tick tick3(100.7, 52);
+    Tick tick1(1768407000000LL, 100.5, 50);
+    Tick tick2(1782823520000LL, 100.6, 51);
+    Tick tick3(1798222255000LL, 100.7, 52);
 
     // 装进vector
     std::vector<Tick> ticks;
