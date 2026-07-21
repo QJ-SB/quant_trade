@@ -1,6 +1,7 @@
 // Feed.h
 #pragma once
 #include <functional>  //std::function<>
+#include <utility>     // std::move()
 #include <vector>
 
 #include "Tick.h"
