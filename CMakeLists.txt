@@ -36,7 +36,8 @@ add_library(quant_core
             OrderBook.cpp
             Exchange.cpp
             Feed.cpp
-            csv_reader.cpp)
+            csv_reader.cpp
+            ThresholdStrategy.cpp)
 # ---
 # 2. 设置库的头文件搜索目录
 # CMAKE_CURRENT_SOURCE_DIR：当前 CMakeLists.txt 所在的源码根目录
@@ -85,7 +86,8 @@ add_executable(unit_tests
             test/test_order_book.cpp
             test/test_exchange.cpp
             test/test_feed.cpp
-            test/test_csv_reader.cpp)
+            test/test_csv_reader.cpp
+            test/test_threshold_strategy.cpp)
 # ---
 # 为测试程序配置依赖链接
 # PRIVATE：仅unit_tests内部使用这些依赖，不会传递给其他上层目标
