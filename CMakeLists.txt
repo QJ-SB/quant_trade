@@ -87,7 +87,8 @@ add_executable(unit_tests
             test/test_exchange.cpp
             test/test_feed.cpp
             test/test_csv_reader.cpp
-            test/test_threshold_strategy.cpp)
+            test/test_threshold_strategy.cpp
+            test/test_feed_strategy_integration.cpp)
 # ---
 # 为测试程序配置依赖链接
 # PRIVATE：仅unit_tests内部使用这些依赖，不会传递给其他上层目标
