@@ -24,6 +24,9 @@ AllowShortIfStatementsOnASingleLine: Never
 # ====== 注释 ======
 SpacesBeforeTrailingComments: 2 # 注释前空2格
 AlignTrailingComments: true     # 行尾注释自动对齐
+SpacesInLineCommentPrefix:
+  Minimum: 1                    # // 后至少保留1个空格
+  Maximum: -1                   # 不强行压缩多个空格，保留列表/缩进类注释
 
 # ====== 命名空间 ======
 NamespaceIndentation: None      # 命名空间内代码不缩进
