@@ -38,7 +38,8 @@ add_library(quant_core
             Feed.cpp
             csv_reader.cpp
             ThresholdStrategy.cpp
-            OrderFactory.cpp)
+            OrderFactory.cpp
+            PreTradeRisk.cpp)
 # ---
 # 2. 设置库的头文件搜索目录
 # CMAKE_CURRENT_SOURCE_DIR：当前 CMakeLists.txt 所在的源码根目录
@@ -92,7 +93,8 @@ add_executable(unit_tests
             test/test_feed_strategy_integration.cpp
             test/test_order_factory.cpp
             test/test_feed_strategy_order_integration.cpp
-            test/test_feed_strategy_exchange_integration.cpp)
+            test/test_feed_strategy_exchange_integration.cpp
+            test/test_pre_trade_risk.cpp)
 # ---
 # 为测试程序配置依赖链接
 # PRIVATE：仅unit_tests内部使用这些依赖，不会传递给其他上层目标
