@@ -1,7 +1,5 @@
 #include <gtest/gtest.h>
-#include <limits>  // std::numeric_limits<T> 标准库数值极值模板类
-                   // std::numeric_limits<T>::quiet_NaN() 静默非数值NaN
-                   // infinity() 正无穷 / -infinity() 负无穷
+#include <limits>  // 提供 quiet_NaN() / infinity() 用于构造非法价格测试数据
 
 #include "PreTradeRisk.h"
 

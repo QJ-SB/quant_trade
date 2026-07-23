@@ -5,33 +5,28 @@
 
 // 风控决策枚举：逐项区分全部拒绝原因，不使用 bool 或 optional 承载
 enum class RiskDecision {
-    Accepted,  // 通过
+    Accepted,
 
-    InvalidPrice,         // 价格非法（price <= 0 或 price 非有限值）
-    NonPositiveQuantity,  // 数量非正数（quantity <= 0）
+    InvalidPrice,         // price <= 0 或非有限值
+    NonPositiveQuantity,  // quantity <= 0
 
-    QuantityLimitExceeded,  // 数量超出单笔上限（quantity > max_order_quantity）
+    QuantityLimitExceeded,  // quantity > 单笔上限
 
-    NotionalLimitExceeded  // 名义金额超出单笔上限
-                           //（notional > max_order_notional）
+    NotionalLimitExceeded  // notional > 单笔上限
 };
 
 class PreTradeRisk {
 public:
-    // 功能描述：构造盘前风控实例，配置单笔数量上限与名义金额上限
-    // 参数说明：max_order_quantity — 单笔最大数量（含等于），
-    //          max_order_notional — 单笔最大名义金额（含等于）
-    // 返回值说明：(无)
-    // 异常说明：(无)
+    /// 构造风控实例并配置两项上限（均为 inclusive limit，等于上限允许通过）
+    /// @param max_order_quantity 单笔最大数量
+    /// @param max_order_notional 单笔最大名义金额
     PreTradeRisk(int max_order_quantity, double max_order_notional);
 
-    // 功能描述：对订单意图执行固定顺序的盘前风控校验
-    // 参数说明：intent — 策略层输出的订单意图（方向、价格、数量）
-    // 返回值说明：RiskDecision 枚举，Accepted 表示通过，其他值区分具体拒绝原因
-    // 异常说明：(无)
+    /// 按固定顺序对订单意图执行风控校验
+    /// @return Accepted 表示放行，其他值标识具体拒绝原因
     RiskDecision check(const OrderIntent& intent) const;
 
 private:
-    int m_max_order_quantity;     // 单笔最大数量上限
-    double m_max_order_notional;  // 单笔最大名义金额上限
+    int m_max_order_quantity;
+    double m_max_order_notional;
 };

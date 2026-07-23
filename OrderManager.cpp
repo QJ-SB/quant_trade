@@ -1,6 +1,6 @@
 #include "OrderManager.h"
 
-#include <cassert>  //assert()
+#include <cassert>
 #include <iostream>
 
 #include "Order.h"
@@ -48,16 +48,18 @@ bool OrderManager::update_order_status(uint64_t id, OrderStatus status) {
 
 bool OrderManager::apply_fill(uint64_t id, int amount) {
     auto it = m_orders.find(id);
-    if (it != m_orders.end()) {  //如果订单存在（继续）
-        assert(amount <= it->second.get_quantity());  //断言检查（兜底）
-        it->second.reduce_quantity(amount);  //原始订单扣减撮合量
-        if (0 == it->second.get_quantity()) {  //如果原始订单全部扣完————FILLED
+    if (it != m_orders.end()) {
+        // assert 内部不变量守卫：成交量不得超过 OMS 中的剩余量
+        assert(amount <= it->second.get_quantity());
+        it->second.reduce_quantity(amount);
+        // 常量放左侧避免误写成 if (quantity = 0) 的赋值陷阱
+        if (0 == it->second.get_quantity()) {
             it->second.set_status(OrderStatus::FILLED);
-        } else {  //如果还有剩余————PARTIALLY_FILLED
+        } else {
             it->second.set_status(OrderStatus::PARTIALLY_FILLED);
         }
         return true;
-    } else {  //如果订单不存在（返回错误）
+    } else {
         return false;
     }
 }
