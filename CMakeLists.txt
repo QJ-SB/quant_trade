@@ -91,7 +91,8 @@ add_executable(unit_tests
             test/test_threshold_strategy.cpp
             test/test_feed_strategy_integration.cpp
             test/test_order_factory.cpp
-            test/test_feed_strategy_order_integration.cpp)
+            test/test_feed_strategy_order_integration.cpp
+            test/test_feed_strategy_exchange_integration.cpp)
 # ---
 # 为测试程序配置依赖链接
 # PRIVATE：仅unit_tests内部使用这些依赖，不会传递给其他上层目标
