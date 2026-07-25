@@ -1,20 +1,23 @@
-// Feed.h
 #pragma once
-#include <functional>  //std::function<>
-#include <utility>     // std::move()
+#include <functional>
+#include <utility>
 #include <vector>
 
 #include "Tick.h"
 
-using TickHandler = std::function<void(const Tick&)>;  // 重命名
+using TickHandler = std::function<void(const Tick&)>;
 
-class Feed {  // Feed管道（数据 --→ 回调处理）
+/// 按输入顺序回放 Tick，并将每笔行情推送给 handler。
+class Feed {
 public:
-    Feed(std::vector<Tick> ticks,
-         TickHandler handler);  // 构造Feed（逐笔成交组，逐笔行情回调函数句柄）
-    void run();                 // 按时间遍历推送ticks
+    /// 保存 ticks 与 handler；要求 timestamp 非递减，不自动排序。
+    /// 相同 timestamp 合法，若时间倒退则抛出 std::runtime_error。
+    Feed(std::vector<Tick> ticks, TickHandler handler);
+
+    /// 按保存顺序逐笔调用 handler，不模拟真实时间间隔。
+    void run();
 
 private:
-    std::vector<Tick> m_ticks;  // 保存行情数据，内部使用
-    TickHandler m_handler;      // 保存回调函数句柄，内部使用
+    std::vector<Tick> m_ticks;
+    TickHandler m_handler;
 };

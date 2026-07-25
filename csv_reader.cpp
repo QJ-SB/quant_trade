@@ -1,10 +1,9 @@
-// csv_reader.cpp
 #include "csv_reader.h"
 
-#include <fstream>    // std::ifstream类
-#include <sstream>    // std::stringstream类
-#include <stdexcept>  // std::runtime_error(), std::exception
-#include <string>     // std::getline() 自动转为std::string
+#include <fstream>
+#include <sstream>
+#include <stdexcept>
+#include <string>
 
 std::vector<Tick> read_ticks_from_csv(const std::string& path) {
     std::ifstream file(path);
@@ -31,18 +30,21 @@ std::vector<Tick> read_ticks_from_csv(const std::string& path) {
                                      std::to_string(line_no) + ": " + line);
         }
 
-        long long timestamp;  //外部声明（让try内部纯净捕捉三转换异常）
+        // 仅将字段转换异常统一为坏行错误；Tick 构造保持在 try 外，
+        // 避免把与输入格式无关的异常误报为 Bad row。
+        long long timestamp;
         double price;
         int volume;
         try {
-            timestamp = std::stoll(fields[0]);  // long long
-            price = std::stod(fields[1]);       // double
-            volume = std::stoi(fields[2]);      // int
+            timestamp = std::stoll(fields[0]);
+            price = std::stod(fields[1]);
+            volume = std::stoi(fields[2]);
         } catch (const std::exception&) {
             throw std::runtime_error("Bad row at line " +
                                      std::to_string(line_no) + ": " + line);
         }
-        ticks.emplace_back(timestamp, price, volume);  //推入外部vecto
+
+        ticks.emplace_back(timestamp, price, volume);
     }
 
     return ticks;

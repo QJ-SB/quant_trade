@@ -46,15 +46,15 @@ std::string order_direction_to_string(OrderDirection d) {
 std::string order_status_to_string(OrderStatus o) {
     switch (o) {
     case OrderStatus::PENDING:
-        return "PENDING";  //挂单中、待成交
+        return "PENDING";
     case OrderStatus::FILLED:
-        return "FILLED";  //已成交
+        return "FILLED";
     case OrderStatus::PARTIALLY_FILLED:
-        return "PARTIALLY_FILLED";  //部分成交
+        return "PARTIALLY_FILLED";
     case OrderStatus::CANCELLED:
-        return "CANCELLED";  //已撤
+        return "CANCELLED";
     case OrderStatus::REJECTED:
-        return "REJECTED";  //被拒
+        return "REJECTED";
     }
-    return "UNKNOWN";  //未知
+    return "UNKNOWN";
 }
