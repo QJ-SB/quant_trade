@@ -1,6 +1,5 @@
 #pragma once
-#include <functional>
-#include <utility>
+#include <functional>  // std::function
 #include <vector>
 
 #include "Tick.h"
