@@ -1,8 +1,8 @@
 #include "Feed.h"
 
-#include <cstddef>
-#include <stdexcept>
-#include <utility>
+#include <cstddef>    // std::size_t
+#include <stdexcept>  // std::runtime_error()
+#include <utility>    // std::move()
 
 Feed::Feed(std::vector<Tick> ticks, TickHandler handler)
     : m_ticks(std::move(ticks)), m_handler(std::move(handler)) {
