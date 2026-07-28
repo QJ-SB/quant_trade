@@ -5,6 +5,7 @@
 
 #include "Exchange.h"
 #include "Feed.h"
+#include "Fill.h"
 #include "Order.h"
 #include "OrderFactory.h"
 #include "ThresholdStrategy.h"

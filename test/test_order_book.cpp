@@ -1,5 +1,6 @@
 #include <gtest/gtest.h>
 
+#include "Fill.h"
 #include "OrderBook.h"
 
 

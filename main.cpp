@@ -1,7 +1,8 @@
 #include <iostream>
 #include <vector>
 
-#include "Exchange.h"      //交易所
+#include "Exchange.h"  //交易所
+#include "Fill.h"
 #include "Order.h"         //订单
 #include "OrderBook.h"     //订单簿
 #include "OrderManager.h"  //订单管理

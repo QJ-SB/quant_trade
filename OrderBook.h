@@ -5,6 +5,7 @@
 #include <unordered_map>
 #include <vector>
 
+#include "Fill.h"
 #include "Order.h"
 
 class OrderBook {

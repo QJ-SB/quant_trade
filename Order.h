@@ -12,15 +12,6 @@ enum class OrderStatus {
     REJECTED
 };
 
-/// 记录一次撮合成交；quantity 同时作用于 taker 与 maker，
-/// price 取 maker 的挂单价格。
-struct Fill {
-    uint64_t taker_id;
-    uint64_t maker_id;
-    int quantity;
-    double price;
-};
-
 std::string order_direction_to_string(OrderDirection d);
 
 std::string order_status_to_string(OrderStatus o);
