@@ -1,11 +1,7 @@
 #include <gtest/gtest.h>
 
-#include "Exchange.h"
-#include "OrderFactory.h"
-#include "PreTradeRisk.h"
 #include "StrategyRunner.h"
-#include "ThresholdStrategy.h"
-#include "Tick.h"
+
 
 /// 测试 StrategyRunner 的 on_tick
 /// 方法在不同情况下的行为，确保策略、风控、订单工厂与交易所按正确顺序协作。

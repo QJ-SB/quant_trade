@@ -95,7 +95,8 @@ add_executable(unit_tests
             test/test_feed_strategy_order_integration.cpp
             test/test_feed_strategy_exchange_integration.cpp
             test/test_pre_trade_risk.cpp
-            test/test_strategy_runner.cpp)
+            test/test_strategy_runner.cpp
+            test/test_feed_strategy_runner_integration.cpp)
 # ---
 # 为测试程序配置依赖链接
 # PRIVATE：仅unit_tests内部使用这些依赖，不会传递给其他上层目标
