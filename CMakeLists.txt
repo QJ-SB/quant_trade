@@ -82,7 +82,6 @@ FetchContent_MakeAvailable(googletest)
 enable_testing()
 # ---
 # 编译生成专门运行单元测试的可执行程序 unit_tests
-# 仅传入测试源码文件 test/test_smoke.cpp，存放各类GTest测试逻辑
 add_executable(unit_tests
             test/test_smoke.cpp
             test/test_order_manager.cpp
@@ -95,7 +94,8 @@ add_executable(unit_tests
             test/test_order_factory.cpp
             test/test_feed_strategy_order_integration.cpp
             test/test_feed_strategy_exchange_integration.cpp
-            test/test_pre_trade_risk.cpp)
+            test/test_pre_trade_risk.cpp
+            test/test_strategy_runner.cpp)
 # ---
 # 为测试程序配置依赖链接
 # PRIVATE：仅unit_tests内部使用这些依赖，不会传递给其他上层目标
