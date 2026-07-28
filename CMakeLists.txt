@@ -39,7 +39,8 @@ add_library(quant_core
             csv_reader.cpp
             ThresholdStrategy.cpp
             OrderFactory.cpp
-            PreTradeRisk.cpp)
+            PreTradeRisk.cpp
+            StrategyRunner.cpp)
 # ---
 # 2. 设置库的头文件搜索目录
 # CMAKE_CURRENT_SOURCE_DIR：当前 CMakeLists.txt 所在的源码根目录
