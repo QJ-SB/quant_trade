@@ -73,3 +73,33 @@ TEST(StrategyRunnerTest, RiskRejectedDoesNotConsumeOrderId) {
     ASSERT_TRUE(order.has_value());
     EXPECT_EQ(order->get_id(), 1000u);
 }
+
+/// 测试交易所成功提交、并发生交易后，StrategyRunner 能正确返回成交信息 fills
+TEST(StrategyRunnerTest, SubmittedOrderReturnsExchangeFills) {
+    ThresholdStrategy strategy(100.0, 200.0, 10);
+    PreTradeRisk risk(10, 1500.0);
+    OrderFactory order_factory(1000);
+    Exchange exchange;
+    StrategyRunner runner(strategy, risk, order_factory, exchange);
+
+    // 先放入一笔卖单作为 maker：
+    // 后续策略生成 50.0 的 Buy taker，可以吃掉 49.0 的 Sell maker。
+    auto maker_submission =
+        exchange.submit_order(Order(9000, OrderDirection::Sell, 49.0, 10));
+
+    ASSERT_TRUE(maker_submission.has_value());
+    EXPECT_TRUE(maker_submission->empty());
+
+    RunResult result = runner.on_tick(Tick(1000, 50.0, 1));
+
+    EXPECT_EQ(result.outcome, RunOutcome::Submitted);
+    EXPECT_FALSE(result.risk_decision.has_value());
+
+    ASSERT_EQ(result.fills.size(), 1u);
+
+    const Fill& fill = result.fills.front();
+    EXPECT_EQ(fill.taker_id, 1000u);
+    EXPECT_EQ(fill.maker_id, 9000u);
+    EXPECT_EQ(fill.quantity, 10);
+    EXPECT_DOUBLE_EQ(fill.price, 49.0);
+}
